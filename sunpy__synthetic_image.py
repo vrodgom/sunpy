@@ -627,50 +627,51 @@ class synthetic_image:
         sunrise_image_apparent_mag = -2.5*np.log10(np.sum(sunimage)) + sun_AB_app_zp
         sunrise_image_absolute_mag = -2.5*np.log10(np.sum(sunimage)) + sun_AB_abs_zp
 
-        primhdu = fits.PrimaryHDU(np.float32(image)) ; primhdu.header.update('IMUNIT','muJy/SqArcsec',comment='microjanskies per square arcsecond')
-        primhdu.header.update('ABZP',round(AB_zeropoint,6),'For Final Image')
-        primhdu.header.update('PIXSCALE',round(theobj.pixel_in_arcsec,6),'For Final Image, arcsec')
-        primhdu.header.update('PIXORIG', round(theobj.camera_pixel_in_arcsec,6), 'For Original Image, arcsec')
-        primhdu.header.update('PIXKPC',round(theobj.pixel_in_kpc,6), 'KPC')
-        primhdu.header.update('ORIGKPC',round(self.sunrise_image.pixel_in_kpc,6),'For Original Image, KPC')
-        primhdu.header.update('NPIX',theobj.n_pixels)
-        primhdu.header.update('NPIXORIG',self.sunrise_image.n_pixels)
+        primhdu = fits.PrimaryHDU(np.float32(image))
+        primhdu.header['IMUNIT'] = ('muJy/SqArcsec', 'microjanskies per square arcsecond')
+        primhdu.header['ABZP'] =(round(AB_zeropoint,6), 'For Final Image')
+        primhdu.header['PIXSCALE'] = (round(theobj.pixel_in_arcsec,6),'For Final Image, arcsec')
+        primhdu.header['PIXORIG'] = ( round(theobj.camera_pixel_in_arcsec,6), 'For Original Image, arcsec')
+        primhdu.header['PIXKPC'] = (round(theobj.pixel_in_kpc,6), 'KPC')
+        primhdu.header['ORIGKPC'] = (round(self.sunrise_image.pixel_in_kpc,6),'For Original Image, KPC')
+        primhdu.header['NPIX'] = (theobj.n_pixels)
+        primhdu.header['NPIXORIG'] = (self.sunrise_image.n_pixels)
 
-        primhdu.header.update('REDSHIFT',self.cosmology.redshift)
-        primhdu.header.update('LUMDIST' ,round(self.cosmology.lum_dist,6), 'MPC')
-        primhdu.header.update('ANGDIST' ,round(self.cosmology.ang_diam_dist,6), 'MPC')
-        primhdu.header.update('PSCALE'  ,round(self.cosmology.kpc_per_arcsec,6),'KPC')
-        primhdu.header.update('DISTMOD'  ,round(self.cosmology.distance_modulus,6),'Mag')
+        primhdu.header['REDSHIFT'] = self.cosmology.redshift
+        primhdu.header['LUMDIST'] = (round(self.cosmology.lum_dist,6), 'MPC')
+        primhdu.header['ANGDIST'] = (round(self.cosmology.ang_diam_dist,6), 'MPC')
+        primhdu.header['PSCALE'] = (round(self.cosmology.kpc_per_arcsec,6),'KPC')
+        primhdu.header['DISTMOD'] = (round(self.cosmology.distance_modulus,6),'Mag')
 
-        primhdu.header.update('H0',round(self.cosmology.H0,6))
-        primhdu.header.update('WM',round(self.cosmology.WM,6))
-        primhdu.header.update('WV',round(self.cosmology.WV,6))
+        primhdu.header['H0'] = (round(self.cosmology.H0,6))
+        primhdu.header['WM'] = (round(self.cosmology.WM,6))
+        primhdu.header['WV'] = (round(self.cosmology.WV,6))
 
         if self.telescope.psf_fits_file==None:
-            primhdu.header.update('PSFFWHM',round(self.telescope.psf_fwhm_arcsec,6),'arcsec')
+            primhdu.header['PSFFWHM'] = (round(self.telescope.psf_fwhm_arcsec,6),'arcsec')
         else:
-            primhdu.header.update('PSFFILE',os.path.join(os.path.basename(os.path.dirname(self.telescope.psf_fits_file)),os.path.basename(self.telescope.psf_fits_file)))
+            primhdu.header['PSFFILE'] = (os.path.join(os.path.basename(os.path.dirname(self.telescope.psf_fits_file)),os.path.basename(self.telescope.psf_fits_file)))
 
-        primhdu.header.update('TPIX',round(self.telescope.pixelsize_arcsec,6),'arcsec')
+        primhdu.header['TPIX'] = (round(self.telescope.pixelsize_arcsec,6),'arcsec')
 
-        primhdu.header.update('FILTER', self.band_name)
-        primhdu.header.update('FILE',self.filename)
-        primhdu.header.update('EFLAMBDA',round(self.lambda_eff*1.0e6,6),'filter effective wavelength [microns]')
+        primhdu.header['FILTER'] = ( self.band_name)
+        primhdu.header['FILE'] = (self.filename)
+        primhdu.header['EFLAMBDA'] = (round(self.lambda_eff*1.0e6,6),'filter effective wavelength [microns]')
 
-        primhdu.header.update('MAG', round(total_apparent_mag,6), 'AB system')
-        primhdu.header.update('ABSMAG', round(total_absolute_mag,6), 'AB system')
-        primhdu.header.update('SUNMAG', round(sunrise_absolute_mag,6), 'from spectrum, Note: excludes Lyman absorption')
-        primhdu.header.update('SUNCMAG', round(sunrise_image_camera_mag,6), 'from image, camera mag')
-        primhdu.header.update('SUNAPMAG', round(sunrise_image_apparent_mag,6), 'from image, apparent mag')
-        primhdu.header.update('SUABSMAG', round(sunrise_image_absolute_mag,6), 'from image, absolute mag')
+        primhdu.header['MAG'] = (round(total_apparent_mag,6), 'AB system')
+        primhdu.header['ABSMAG'] = (round(total_absolute_mag,6), 'AB system')
+        primhdu.header['SUNMAG'] = (round(sunrise_absolute_mag,6), 'from spectrum, Note: excludes Lyman absorption')
+        primhdu.header['SUNCMAG'] = (round(sunrise_image_camera_mag,6), 'from image, camera mag')
+        primhdu.header['SUNAPMAG'] = (round(sunrise_image_apparent_mag,6), 'from image, apparent mag')
+        primhdu.header['SUABSMAG'] = (round(sunrise_image_absolute_mag,6), 'from image, absolute mag')
 
         if add_noise==False and add_background==False:
-            primhdu.header.update('SKYSIG', 0.0, 'image units')
+            primhdu.header['SKYSIG'] = ( 0.0, 'image units')
         elif sky_sig != None:
-            primhdu.header.update('SKYSIG', round(self.sky_sig,6), 'image units')
+            primhdu.header['SKYSIG'] = ( round(self.sky_sig,6), 'image units')
 
         if add_background==True:
-            primhdu.header.update('BGFILE', os.path.basename(backgrounds[self.band]))
+            primhdu.header['BGFILE'] = ( os.path.basename(backgrounds[self.band]))
 
         camera_param_cards = self.param_header.cards[13:]
         for card in camera_param_cards:
@@ -678,7 +679,8 @@ class synthetic_image:
             primhdu.header.append(card)
 
 
-        primhdu.update_ext_name('SYNTHETIC_IMAGE')
+        #primhdu.update_ext_name('SYNTHETIC_IMAGE')
+        primhdu.name = 'SYNTHETIC_IMAGE'
 
         #Optionally, we can save additional images alongside these final ones
         #e.g., the raw sunrise image below
