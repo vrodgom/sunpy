@@ -214,9 +214,9 @@ class synthetic_image:
 
         band_names  = sunpy.sunpy__load.load_broadband_names(filename)
         hdulist = fits.open(filename)
-	
+
         if type(band) is not int:
-	    band = int( np.where([this_band == band for this_band in band_names])[0][0]  )
+            band = int( np.where([this_band == band for this_band in band_names])[0][0]  )
 
         self.camera           = camera
         self.band             = band
@@ -360,30 +360,30 @@ class synthetic_image:
 
 
     def rebin_to_physical_scale(self, rebin_phys=True):
-	if rebin_phys:
-	    n_pixel_new = np.floor( ( self.psf_image.pixel_in_arcsec / self.telescope.pixelsize_arcsec )  * self.psf_image.n_pixels )
-	    rebinned_image = congrid(self.psf_image.image,  (n_pixel_new, n_pixel_new) )
-  	    self.rebinned_image.init_image(rebinned_image, self) 
+        if rebin_phys:
+            n_pixel_new = np.floor( ( self.psf_image.pixel_in_arcsec / self.telescope.pixelsize_arcsec )  * self.psf_image.n_pixels )
+            rebinned_image = congrid(self.psf_image.image,  (n_pixel_new, n_pixel_new) )
+            self.rebinned_image.init_image(rebinned_image, self) 
             del n_pixel_new, rebinned_image
             gc.collect()
-	else:
-	    self.rebinned_image.init_image(self.psf_image.image, self)
+        else:
+            self.rebinned_image.init_image(self.psf_image.image, self)
        
 
     def add_noise(self, add_noise=True, sky_sig=None, sn_limit=25.0):
-	if add_noise:
-	    if sky_sig==None:
-	        total_flux 	= np.sum( self.rebinned_image.image )
-	        area 		= 1.0 * self.rebinned_image.n_pixels * self.rebinned_image.n_pixels
-	        sky_sig 	= np.sqrt( (total_flux / sn_limit)**2 / (area**2 ) )
+        if add_noise:
+            if sky_sig==None:
+                total_flux 	= np.sum( self.rebinned_image.image )
+                area 		= 1.0 * self.rebinned_image.n_pixels * self.rebinned_image.n_pixels
+                sky_sig 	= np.sqrt( (total_flux / sn_limit)**2 / (area**2 ) )
 
-	    noise_image 	=  sky_sig * np.random.randn( self.rebinned_image.n_pixels, self.rebinned_image.n_pixels ) 
-	    new_image = self.rebinned_image.image + noise_image
-	    self.noisy_image.init_image(new_image, self)
+            noise_image 	=  sky_sig * np.random.randn( self.rebinned_image.n_pixels, self.rebinned_image.n_pixels ) 
+            new_image = self.rebinned_image.image + noise_image
+            self.noisy_image.init_image(new_image, self)
             del noise_image, new_image
             gc.collect()
-	else:
-	    self.noisy_image.init_image(self.rebinned_image.image, self)
+        else:
+            self.noisy_image.init_image(self.rebinned_image.image, self)
 
 
 
@@ -518,23 +518,23 @@ class synthetic_image:
 
 
     def save_bgimage_fits(self,outputfitsfile, save_img_in_muJy=False):
-	""" Written by G. Snyder 8/4/2014 to output FITS files from Sunpy module """
+        """ Written by G. Snyder 8/4/2014 to output FITS files from Sunpy module """
         theobj = self.bg_image
         image = np.copy( theobj.return_image() )		# in muJy / str
 
         pixel_area_in_str = theobj.pixel_in_arcsec**2 / n_arcsec_per_str
         image *= pixel_area_in_str      # in muJy
-	print(np.sum(image))
+        print(np.sum(image))
         if save_img_in_muJy == False:
-	    print(bg_zpt[self.band_name])
+            print(bg_zpt[self.band_name])
             if len(bg_zpt[self.band_name]) > 0:
                 image = image / ( 10.0**(-0.4*(bg_zpt[self.band_name][0]- 23.9 )) ) 
-		print(( 10.0**(-0.4*(bg_zpt[self.band_name][0]- 23.9 )) ))
+                print(( 10.0**(-0.4*(bg_zpt[self.band_name][0]- 23.9 )) ))
         else:
             print('saving image in muJy!!!!!')
         print(" ")
         print(" ")
-	print(image.shape)
+        print(image.shape)
         print(np.sum(image) )
 #        print(22.5 - 2.5*np.log10( np.sum(image) ))
 #        print(-2.5*np.log10( np.sum(image) ))
@@ -565,7 +565,7 @@ class synthetic_image:
         primhdu.header.update('FILTER', self.band_name)
         primhdu.header.update('FILE',self.filename)
 #        primhdu.update_ext_name('SYNTHETIC_IMAGE')
-	primhdu.header.name="SYNTHETIC_IMAGE"
+        primhdu.header.name="SYNTHETIC_IMAGE"
 
 #	primhdu.header[keyword] = value
 
@@ -585,7 +585,7 @@ class synthetic_image:
 
 
     def save_bgimage_fits_mujyas(self,outputfitsfile, save_img_in_muJy=False,add_noise=False, add_background=False):
-	""" Written by G. Snyder 8/4/2014 to output FITS files from Sunpy module """
+        """ Written by G. Snyder 8/4/2014 to output FITS files from Sunpy module """
         """ Updated 9/24/2015 """
 
         theobj = self.bg_image
@@ -958,21 +958,20 @@ class single_image:
         self.image              = image
         self.n_pixels           = image.shape[0]
         if fov==None:
-	    if comoving_to_phys_fov:
+            if comoving_to_phys_fov:
                 self.pixel_in_kpc           = parent_obj.param_header.get('linear_fov') / self.n_pixels / (parent_obj.cosmology.redshift+1)
-	    else:
-		self.pixel_in_kpc           = parent_obj.param_header.get('linear_fov') / self.n_pixels
+            else:
+                self.pixel_in_kpc           = parent_obj.param_header.get('linear_fov') / self.n_pixels
         else:
             self.pixel_in_kpc           = fov / self.n_pixels
         self.pixel_in_arcsec    = self.pixel_in_kpc / parent_obj.cosmology.kpc_per_arcsec
         self.image_exists       = True
         self.camera_pixel_in_arcsec = (self.pixel_in_kpc / parent_obj.param_header.get('cameradist') ) * 2.06e5
 
-	pixel_in_sr = (1e3*self.pixel_in_kpc /10.0)**2
-	image_in_muJy =  self.image  * pixel_in_sr		# should now have muJy
+        pixel_in_sr = (1e3*self.pixel_in_kpc /10.0)**2
+        image_in_muJy =  self.image  * pixel_in_sr		# should now have muJy
         tot_img_in_Jy = np.sum(image_in_muJy) / 1e6		# now have total image flux in Jy
-	abmag = -2.5 * np.log10(tot_img_in_Jy / 3631 )
-#	print("the ab magnitude of this image is :"+str(abmag))
+        abmag = -2.5 * np.log10(tot_img_in_Jy / 3631 )
 
 
     def calc_ab_abs_zero(self, parent_obj):
