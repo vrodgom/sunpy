@@ -142,11 +142,11 @@ def load_resolved_broadband_apparent_magnitudes(filename, redshift, camera=0, se
 
     for band in np.arange(n_bands):
         obj = synthetic_image(filename, band=int(band), seed=seed, redshift=redshift, **kwargs)    
-	img = obj.bg_image.return_image()		#  muJy / str
-	if band==0:
-	    n_pixels = img.shape[0]
-	    all_images = np.zeros( (n_bands, n_pixels, n_pixels ) )
-	all_images[band, :, :] = img			# muJy / str
+        img = obj.bg_image.return_image()		#  muJy / str
+        if band==0:
+            n_pixels = img.shape[0]
+            all_images = np.zeros( (n_bands, n_pixels, n_pixels ) )
+        all_images[band, :, :] = img			# muJy / str
 
         pixel_in_sr = (1e3*obj.bg_image.pixel_in_kpc /10.0)**2
     
