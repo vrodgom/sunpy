@@ -17,23 +17,7 @@ import os
 import sys
 import math
 import gc
-
-try:
-    import astropy.io.fits as fits
-    print "loaded astropy.io.fits"
-except:
-    try:
-        import pyfits as fits
-        print "loaded pyfits"
-    except:
-        print "Error: Unable to access PyFITS or AstroPy modules."
-        print "Add PyFITS to your site-packages with:"
-        print "% pip install pyfits\n"
-        print "  or  "
-        print "% easy_install pyfits\n"
-        print "  or  "
-        print "download at: www.stsci.edu/institute/software_hardware/pyfits/Download\n"
-
+import astropy.io.fits as fits
 
 
 import cosmocalc
@@ -44,16 +28,9 @@ import scipy.interpolate
 
 
 
-try:
-    import astropy.convolution.convolve as convolve ; CONVOLVE_TYPE='astropy'
-    print "loaded astropy.convolution.convolve"
-    from astropy.convolution import *
-except:
-    try:
-        from scipy.signal import convolve2d as convolve ; CONVOLVE_TYPE='scipy'
-        print "loaded scipy.signal.convolve2d; note that the astropy.convolution.convolve() function is preferred. There may be unexpected sub-pixel or off-by-one behavior with this scipy function."
-    except:
-        print "Error: Unable to access SciPy or AstroPy convolution modules."
+import astropy.convolution.convolve as convolve ; CONVOLVE_TYPE='astropy'
+#from astropy.convolution import *
+
 
 
 import sunpy.sunpy__load
@@ -164,7 +141,7 @@ def load_resolved_broadband_apparent_magnitudes(filename, redshift, camera=0, se
     mags   = sunpy.sunpy__load.load_all_broadband_photometry(filename, camera=0)
 
     for band in np.arange(n_bands):
-        obj          = synthetic_image(filename, band=int(band), seed=seed, redshift=redshift, **kwargs)    
+        obj = synthetic_image(filename, band=int(band), seed=seed, redshift=redshift, **kwargs)    
 	img = obj.bg_image.return_image()		#  muJy / str
 	if band==0:
 	    n_pixels = img.shape[0]
@@ -179,9 +156,9 @@ def load_resolved_broadband_apparent_magnitudes(filename, redshift, camera=0, se
         tot_img_in_Jy = np.sum(all_images[band,:,:])    # total image flux in Jy
         abmag = -2.5 * np.log10(tot_img_in_Jy / 3631 )
         if verbose:
-            print "the ab magnitude of band "+str(band)+" is :"+str(abmag)+"  "+str(mags[band])
-            print abmag/mags[band], abmag - mags[band]
-            print " "
+            print("the ab magnitude of band "+str(band)+" is :"+str(abmag)+"  "+str(mags[band]))
+            print(abmag/mags[band], abmag - mags[band])
+            print(" ")
 
     all_images = -2.5 * np.log10( all_images / 3631 )                   # abmag in each pixel
     dist = (cosmocalc.cosmocalc(redshift, H0=70.4, WM=0.2726, WV=0.7274))['DL_Mpc'] * 1e6
@@ -227,7 +204,7 @@ class synthetic_image:
             **kwargs):
 
         if (not os.path.exists(filename)):
-            print "file not found:", filename
+            print("file not found:", filename)
             sys.exit()
 
         start_time = time.time()
@@ -283,7 +260,7 @@ class synthetic_image:
         this_image = this_image * to_microjanskies 		# to microjanskies / str
 
         if True:	#verbose:
-            print "SUNRISE calculated the abmag for this system to be: {:.2f}".format(self.filter_data.AB_mag_nonscatter0[band])
+            print("SUNRISE calculated the abmag for this system to be: {:.2f}".format(self.filter_data.AB_mag_nonscatter0[band]))
 
         self.sunrise_image.init_image(this_image, self, comoving_to_phys_fov=False)
             # assume now that all images are in micro-Janskies per str
@@ -301,11 +278,11 @@ class synthetic_image:
         self.seed = self.add_background(seed=self.seed, add_background=add_background, rebin_gz=rebin_gz, n_target_pixels=n_target_pixels, fix_seed=fix_seed)
 
         end_time   = time.time()
-        #print "init images + adding realism took "+str(end_time - start_time)+" seconds"
+        #print("init images + adding realism took "+str(end_time - start_time)+" seconds")
         num_label = len(bb_label)
 
         if verbose:
-            print "preparing to save "+filename[:filename.index(bb_label)]+'synthetic_image_'+filename[filename.index(bb_label)+num_label:filename.index('.fits')]+'_band_'+str(self.band)+'_camera_'+str(camera)+'_'+str(int(self.seed))+'.fits'
+            print("preparing to save "+filename[:filename.index(bb_label)]+'synthetic_image_'+filename[filename.index(bb_label)+num_label:filename.index('.fits')]+'_band_'+str(self.band)+'_camera_'+str(camera)+'_'+str(int(self.seed))+'.fits')
 
         if save_fits:
             if custom_fitsfile != None:
@@ -331,16 +308,13 @@ class synthetic_image:
                 n_pixel_orig = self.sunrise_image.n_pixels
                 n_pixel_new = self.sunrise_image.n_pixels*self.sunrise_image.pixel_in_arcsec/self.telescope.psf_pixsize_arcsec
 
-                #print np.sum(self.sunrise_image.image)
                 new_image = congrid(self.sunrise_image.image, (n_pixel_new,n_pixel_new))
-                #print np.sum(new_image)
 
                 #second, convolve with PSF
                 if CONVOLVE_TYPE=='astropy':
                     #astropy.convolution.convolve()
-                    print "convolving with astropy"
+                    print("convolving with astropy")
                     conv_im = convolve_fft(new_image,self.telescope.psf_kernel,boundary='fill',fill_value=0.0,normalize_kernel=True)  #boundary option?
-                    #print np.sum(conv_im)
                 else:
                     #scipy.signal.convolve2d()
                     conv_im = convolve(new_image,self.telescope.psf_kernel/np.sum(self.telescope.psf_kernel),boundary='fill',fillvalue=0.0,mode='same')  #boundary option?
@@ -422,7 +396,7 @@ class synthetic_image:
             #RadiusObject 	= RadialInfo(self.noisy_image.n_pixels, self.noisy_image.image)
             r_petro_kpc = RadiusObject.PetroRadius * self.noisy_image.pixel_in_kpc    # do this outside of the RadialInfo class'
             if verbose:
-                print " we've calculated a r_p of "+str(r_petro_kpc)
+                print(" we've calculated a r_p of "+str(r_petro_kpc))
             del RadiusObject
             gc.collect()
         else:
@@ -485,12 +459,12 @@ class synthetic_image:
             #=== load *full* bg image, and its properties ===#
                 bg_filename = (backgrounds[self.band])[0]
                 if not (os.path.isfile(bg_filename)):
-                    print "  Background files were not found...  "
-                    print "  The standard files used in Torrey al. (2015), Snyder et al., (2015) and Genel et al., (2014) ..."
-                    print "  can be downloaded using the download_backgrounds routine or manually from:  "
-                    print "     http://illustris.rc.fas.harvard.edu/data/illustris_images_aux/backgrounds/SDSS_backgrounds/J113959.99+300000.0-u.fits "
-                    print "     http://illustris.rc.fas.harvard.edu/data/illustris_images_aux/backgrounds/SDSS_backgrounds/J113959.99+300000.0-g.fits "
-                    print "  "
+                    print("  Background files were not found...  ")
+                    print("  The standard files used in Torrey al. (2015), Snyder et al., (2015) and Genel et al., (2014) ...")
+                    print("  can be downloaded using the download_backgrounds routine or manually from:  ")
+                    print("     http://illustris.rc.fas.harvard.edu/data/illustris_images_aux/backgrounds/SDSS_backgrounds/J113959.99+300000.0-u.fits ")
+                    print("     http://illustris.rc.fas.harvard.edu/data/illustris_images_aux/backgrounds/SDSS_backgrounds/J113959.99+300000.0-g.fits ")
+                    print("  ")
             
                 file = fits.open(bg_filename) ;       # was pyfits.open(bg_filename) ;
                 header = file[0].header ;
@@ -550,21 +524,21 @@ class synthetic_image:
 
         pixel_area_in_str = theobj.pixel_in_arcsec**2 / n_arcsec_per_str
         image *= pixel_area_in_str      # in muJy
-	print np.sum(image)
+	print(np.sum(image))
         if save_img_in_muJy == False:
-	    print bg_zpt[self.band_name]
+	    print(bg_zpt[self.band_name])
             if len(bg_zpt[self.band_name]) > 0:
                 image = image / ( 10.0**(-0.4*(bg_zpt[self.band_name][0]- 23.9 )) ) 
-		print ( 10.0**(-0.4*(bg_zpt[self.band_name][0]- 23.9 )) )
+		print(( 10.0**(-0.4*(bg_zpt[self.band_name][0]- 23.9 )) ))
         else:
-            print 'saving image in muJy!!!!!'
-        print " "
-        print " "
-	print image.shape
-        print np.sum(image) 
-#        print 22.5 - 2.5*np.log10( np.sum(image) )
-#        print -2.5*np.log10( np.sum(image) )
-        print " "
+            print('saving image in muJy!!!!!')
+        print(" ")
+        print(" ")
+	print(image.shape)
+        print(np.sum(image) )
+#        print(22.5 - 2.5*np.log10( np.sum(image) ))
+#        print(-2.5*np.log10( np.sum(image) ))
+        print(" ")
 
         primhdu = fits.PrimaryHDU(image) ; primhdu.header.update('IMUNIT','NMAGGIE',comment='approx 3.63e-6 Jy')
         primhdu.header.update('ABABSZP',22.5,'For Final Image')  #THIS SHOULD BE CORRECT FOR NANOMAGGIE IMAGES ONLY
@@ -622,7 +596,7 @@ class synthetic_image:
         sunimage = np.copy(sunobj.return_image() )
         sunimage *= 1.0/n_arcsec_per_str
 
-        #print theobj.pixel_in_arcsec
+        #print(theobj.pixel_in_arcsec)
         AB_zeropoint = -2.5*np.log10(theobj.pixel_in_arcsec**2) - 2.5*(-6.0) + 2.5*np.log10(3631.0)  #for image in muJy/Arcsec**2
         total_apparent_mag = -2.5*np.log10(np.sum(image)) + AB_zeropoint
         total_absolute_mag = -2.5*np.log10(np.sum(image)) + AB_zeropoint - self.cosmology.distance_modulus
@@ -684,7 +658,7 @@ class synthetic_image:
 
         camera_param_cards = self.param_header.cards[13:]
         for card in camera_param_cards:
-            #print card
+            #print(card)
             primhdu.header.append(card)
 
 
@@ -716,7 +690,7 @@ def get_pixelsize_arcsec(header):
     try:
         pix_arcsec = 3600.0*(cd1_1**2 + cd1_2**2)**0.5
     except:
-        print "WARNING!!! SETTING PIXEL SCALE MANUALLY!"
+        print("WARNING!!! SETTING PIXEL SCALE MANUALLY!")
         pix_arcsec = 0.05
 
     return pix_arcsec
@@ -755,7 +729,6 @@ class RadialInfo:
         x0 = np.array(self.rsquare).flatten()
         y0 = np.array(image).flatten()
         
-        #print x0.shape
         x0 = x0[ y0 > 0 ]
         y0 = y0[ y0 > 0 ]
         
@@ -799,12 +772,12 @@ class RadialInfo:
         self.PetroRadius = np.flipud(self.RadiusGrid)[self.Pind]
         
         if verbose:
-            print y2
-            print " Saving Figure ..."
+            print(y2)
+            print(" Saving Figure ...")
             import matplotlib.pyplot as plt
             fig = plt.figure(figsize=(22,5))
             ax = fig.add_subplot(1,5,1)
-            print x0.shape
+            print(x0.shape)
             ax.plot(x0, y0, 'ro', ms=5)
             ax.plot(self.RadiusGrid, y1, 'g', lw=3, ls='-')
             ax.plot(self.RadiusGrid, y2, 'b', lw=3, ls='-')
@@ -828,7 +801,6 @@ class RadialInfo:
             fig.savefig('temp1.png')
             fig.clf()
             plt.close()
-#            print " Figure has been saved ... "
 
 
 
@@ -866,7 +838,7 @@ class RadialInfo:
 class fits_header:
   def __init__(self, filename):
     if (not os.path.exists(filename)):
-      print "file not found:", filename
+      print("file not found:", filename)
       sys.exit()
 
     hdulist = fits.open(filename)
@@ -876,7 +848,7 @@ class fits_header:
 
 def my_fits_open(filename):
     if (not os.path.exists(filename)):
-        print "file not found:", filename
+        print("file not found:", filename)
         sys.exit()
 
     return fits.open(filename)
@@ -957,7 +929,7 @@ class telescope:
             self.psf_pixsize_arcsec = psf_pixsize_arcsec
 
             if (self.psf_pixsize_arcsec > self.pixelsize_arcsec) and (rebin_phys==True) and (add_psf==True):
-                print "WARNING: you are requesting to rebin an image to a higher resolution than the requested PSF file supports. OK if this is desired behavior."
+                print("WARNING: you are requesting to rebin an image to a higher resolution than the requested PSF file supports. OK if this is desired behavior.")
 
 
 
@@ -1000,7 +972,7 @@ class single_image:
 	image_in_muJy =  self.image  * pixel_in_sr		# should now have muJy
         tot_img_in_Jy = np.sum(image_in_muJy) / 1e6		# now have total image flux in Jy
 	abmag = -2.5 * np.log10(tot_img_in_Jy / 3631 )
-#	print "the ab magnitude of this image is :"+str(abmag)
+#	print("the ab magnitude of this image is :"+str(abmag))
 
 
     def calc_ab_abs_zero(self, parent_obj):
@@ -1046,9 +1018,9 @@ def congrid(a, newdims, centre=False, minusone=False):
     old = np.array( a.shape )
     ndims = len( a.shape )
     if len( newdims ) != ndims:
-        print "[congrid] dimensions error. " \
+        print("[congrid] dimensions error. " \
               "This routine currently only support " \
-              "rebinning to the same number of dimensions."
+              "rebinning to the same number of dimensions.")
         return None
     newdims = np.asarray( newdims, dtype=float )
     dimlist = []
@@ -1093,4 +1065,4 @@ def download_backgrounds():
                 this_file = wget.download(url)
                 os.rename(this_file, this_background[0])
 
-                print url
+                print(url)

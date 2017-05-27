@@ -11,17 +11,7 @@ For usage examples, see the plotting routines in sunpy__plot.
 import numpy as np
 import os
 import sys
-try:
-    import astropy.io.fits as fits
-    print "loaded astropy.io.fits"
-except:
-    try:
-        import pyfits as fits
-        print "loaded pyfits"
-    except:
-        print "Error: Unable to access PyFITS or AstroPy modules.\n\n"+"With root access, add PyFITS to your site-packages with:\n\n"+"% pip install pyfits\n"+"or\n"+"% easy_install pyfits\n\n"+"or download at: www.stsci.edu/institute/software_hardware/pyfits/Download\n"+"where additional installation options and instructions can be found."
-
-#import astropy.io.fits as fits
+import astropy.io.fits as fits
 import cosmocalc			# http://cxc.harvard.edu/contrib/cosmocalc/
 import scipy as sp
 import scipy.ndimage
@@ -43,7 +33,7 @@ speedoflight_m  = 2.99e8
 
 def my_fits_open(filename):
     if (not os.path.exists(filename)):
-        print "file not found:", filename
+        print("file not found:", filename)
         sys.exit()
     return fits.open(filename)
 
@@ -100,7 +90,7 @@ def load_resolved_broadband_magnitudes(filename, band=0, camera=0, **kwargs):
     image /= 1e6                                               # in Jy                         
     tot_img_in_Jy = np.sum(image)                               # total image flux in Jy
     abmag = -2.5 * np.log10(tot_img_in_Jy / 3631 )
-    print abmag
+    print(abmag)
     return abmag
 
 
@@ -127,8 +117,8 @@ def load_broadband_names(filename):
 
 
 def load_broadband_fast_names(filename):
-    print " "
-    print "WARNING: fast NAMES HAVE BEEN HARD-CODED; CHECK OUTPUT BELOW FOR CONSISTENCY!!!"
+    print(" ")
+    print("WARNING: fast NAMES HAVE BEEN HARD-CODED; CHECK OUTPUT BELOW FOR CONSISTENCY!!!")
 
     sunrise_names = load_broadband_names(filename)
     fast_names    = sunrise_names 			## initial guess
@@ -140,16 +130,16 @@ def load_broadband_fast_names(filename):
     fast_names[6] = "SDSS/z.dat"
 
     for index in range(len(fast_names)):
-        print sunrise_names[index]
-        print fast_names[index]
-        print " "
+        print(sunrise_names[index])
+        print(fast_names[index])
+        print(" ")
 
     return fast_names
 
 
 def load_broadband_effective_wavelengths(filename,band=None):
   if (not os.path.exists(filename)):
-    print "file not found:", filename
+    print("file not found:", filename)
     sys.exit()
 
   hdulist = fits.open(filename)
@@ -169,7 +159,7 @@ def load_broadband_effective_wavelengths(filename,band=None):
 
 def load_all_broadband_images(filename,camera=0,openlist=None,use_nonscatter=True):
   if (not os.path.exists(filename)):
-    print "file not found:", filename
+    print("file not found:", filename)
     sys.exit()
 
   if use_nonscatter is True:
@@ -181,7 +171,7 @@ def load_all_broadband_images(filename,camera=0,openlist=None,use_nonscatter=Tru
       openlist = fits.open(filename,memmap=False)
       data = openlist[camera_string].data
       #openlist.close()
-      print "### Sunpy: opening broadband list: ", openlist.filename()
+      print("### Sunpy: opening broadband list: ", openlist.filename())
   else:
       openfn = openlist.filename()
       assert openfn==filename
@@ -207,7 +197,7 @@ def load_broadband_image(filename,band=0,camera=0):
 
 def load_all_broadband_photometry(filename,camera=0):
   if (not os.path.exists(filename)):
-    print "file not found:", filename
+    print("file not found:", filename)
     return 0
 
   cst = str(camera)
@@ -244,11 +234,10 @@ def load_resolved_broadband_apparent_magnitudes(filename, redshift, camera=0, **
     for index,this_lambda in enumerate(lambda_eff):
         tot_img_in_Jy = np.sum(images[index,:,:])           		  	# total image flux in Jy
         abmag = -2.5 * np.log10(tot_img_in_Jy / 3631 )
-	if True:
-            print "the ab magnitude of this image is :"+str(abmag)+"  "+str(mags[index])
-	    print abmag/mags[index], abmag - mags[index]
+        print("the ab magnitude of this image is :"+str(abmag)+"  "+str(mags[index]))
+        print(abmag/mags[index], abmag - mags[index])
 
-        print index, np.sum(images[index,:,:])
+        print(index, np.sum(images[index,:,:]))
 
     images = -2.5 * np.log10( images / 3631 )			# abmag in each pixel
 
@@ -264,7 +253,7 @@ def load_resolved_broadband_apparent_magnitudes(filename, redshift, camera=0, **
 
 def load_redshift(filename):
   if (not os.path.exists(filename)):
-    print "file not found:", filename
+    print("file not found:", filename)
     sys.exit()
 
   hdulist = fits.open(filename)
